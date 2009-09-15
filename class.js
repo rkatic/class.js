@@ -69,7 +69,7 @@
     
     //EXPOSE
     this.$object = $object;
-    this.$clss = $class;
+    this.$class = $class;
     
     if ( typeof jQuery !== "undefined" ) {
         jQuery.define = function( base, prop ) {
