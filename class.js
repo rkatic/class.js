@@ -1,27 +1,18 @@
 (function(){
 
     var F = function(){},
+        hasOwnProperty = Object.prototype.hasOwnProperty,
         toString = Object.prototype.toString,
-        fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/;
+        superTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/;
     
-    function isFunction( obj ) {
-        return toString.call(obj) !== "[object Function]";
+    function isToWrap( obj ) {
+        return toString.call(obj) === "[object Function]" && superTest.test(obj);
     }
     
-    function proxy( parent, fn ) {
+    function proxy( fn, parent, i ) {
         return function() {
             var tmp = this._super;
-            this._super = parent;
-            var ret = fn.apply(this, arguments);
-            this._super = tmp;
-            return ret;
-        };
-    }
-    
-    function prop_proxy( proto, i, fn ) {
-        return function() {
-            var tmp = this._super;
-            this._super = proto[i];
+            this._super = i ? parent[i] : parent;
             var ret = fn.apply(this, arguments);
             this._super = tmp;
             return ret;
@@ -32,12 +23,17 @@
         F.prototype = proto;
         var obj = new F();
         
-        if ( prop )
-            for ( var i in prop )
-                obj[i] = isFunction(prop[i]) && isFunction(proto[i])
-                  && fnTest.test(prop[i]) ?
-                    prop_proxy( proto, i, prop[i] ) :
+        if ( prop ) {
+            for ( var i in prop ) {
+                // Own properties are iterated firstly, so break if current is not own.
+                if ( !hasOwnProperty.call(prop, i) ) {
+                    break;
+                }
+                obj[i] = isToWrap( prop[i] ) ?
+                    proxy( prop[i], proto, i ) :
                     prop[i];
+            }
+        }
         
         return obj;
     }
@@ -48,12 +44,12 @@
             base = null;
         }
         
-        var cls = prop && prop.hasOwnProperty("constructor") ?
+        var cls = prop && hasOwnProperty.call(prop, "constructor") ?
             prop.constructor : null;
         
         if ( cls ) {
-            if ( base && fnTest.test(cls) ) {
-                cls = proxy(base, cls);
+            if ( isToWrap(cls) ) {
+                cls = proxy(cls, base);
             }
         } else {
             cls = base ?
@@ -61,7 +57,7 @@
                 function(){};
         }
         
-        cls.prototype = $object((base || Object).prototype, prop);
+        cls.prototype = base ? $object(base.prototype, prop) : prop;
         cls.prototype.constructor = cls;
         
         return cls;
@@ -73,7 +69,7 @@
     
     if ( typeof jQuery !== "undefined" ) {
         jQuery.define = function( base, prop ) {
-            return ( !prop || isFunction(base) ? $class : $object )( base, prop );
+            return ( !prop || jQuery.isFunction(base) ? $class : $object )( base, prop );
         }
     }
 
