@@ -39,7 +39,7 @@
     }
     
     function $class( base, prop ) {        
-        if ( !isFunction(base) ) {
+        if ( !prop ) {
             prop = base;
             base = null;
         }
