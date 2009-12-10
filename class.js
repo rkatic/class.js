@@ -39,7 +39,7 @@
     }
     
     function $class( base, prop ) {        
-        if ( !prop ) {
+        if ( toString.call(base) !== "[object Function]" ) {
             prop = base;
             base = null;
         }
