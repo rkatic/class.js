@@ -47,14 +47,13 @@
         var cls = prop && hasOwnProperty.call(prop, "constructor") ?
             prop.constructor : null;
         
-        if ( cls ) {
-            if ( isToWrap(cls) ) {
-                cls = proxy(cls, base);
-            }
-        } else {
+        if ( cls == null ) {
             cls = base ?
                 function(){ return base.apply(this, arguments); } :
                 function(){};
+        }
+        else if ( isToWrap(cls) ) {
+            cls = proxy(cls, base);
         }
         
         cls.prototype = base ? $object(base.prototype, prop) : prop;
