@@ -65,11 +65,5 @@
 	//EXPOSE
 	this.$object = $object;
 	this.$class = $class;
-	
-	if ( typeof jQuery !== "undefined" ) {
-		jQuery.define = function( base, prop ) {
-			return ( !prop || jQuery.isFunction(base) ? $class : $object )( base, prop );
-		}
-	}
 
 })();
