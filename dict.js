@@ -49,7 +49,7 @@ var Dict = $class({
         }
     },
     update: function( obj ) {
-        if ( obj.constructor === this.constructor ) {
+        if ( obj instanceof Dict ) {
             var dm = this.m, sm = obj.m;
             for ( var i in sm ) {
                 if ( !sm.hasOwnProperty(i) ) {
@@ -58,7 +58,13 @@ var Dict = $class({
                 dm[i] = sm[i];
             }
         } else {
-            obj.each( this.set, this );
+            var dm = this.m;
+            for ( var i in obj ) {
+                if ( !obj.hasOwnProperty(i) ) {
+                    break;
+                }
+                dm[ "#" + i ] = obj[ i ];
+            }
         }
         return this;
     },
