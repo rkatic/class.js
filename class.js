@@ -3,10 +3,10 @@
 	var F = function(){},
 		hasOwnProperty = Object.prototype.hasOwnProperty,
 		toString = Object.prototype.toString,
-		superTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : null;
+		rsuper = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /^/;
 	
-	function isToWrap( obj ) {
-		return toString.call(obj) === "[object Function]" && ( !superTest || superTest.test(obj) );
+	function isFunction( obj ) {
+		return toString.call(obj) === "[object Function]";
 	}
 	
 	function proxy( fn, parent, i ) {
@@ -29,9 +29,12 @@
 				if ( !hasOwnProperty.call(prop, i) ) {
 					break;
 				}
-				obj[i] = isToWrap( prop[i] ) ?
-					proxy( prop[i], proto, i ) :
-					prop[i];
+				
+				var value = prop[i];
+				
+				obj[i] = isFunction(value) && rsuper.test(value)  ?
+					proxy( value, proto, i ) :
+					value;
 			}
 		}
 		
@@ -39,20 +42,20 @@
 	}
 	
 	function $class( base, prop ) {        
-		if ( toString.call(base) !== "[object Function]" ) {
+		if ( !isFunction(base) ) {
 			prop = base;
 			base = null;
 		}
 		
-		var cls = prop && hasOwnProperty.call(prop, "constructor") ?
+		var cls = prop && hasOwnProperty.call(prop, "constructor") && isFunction(prop.constructor) ?
 			prop.constructor : null;
 		
 		if ( cls == null ) {
 			cls = base ?
 				function(){ return base.apply(this, arguments); } :
 				function(){};
-		}
-		else if ( isToWrap(cls) ) {
+		
+		} else if ( rsuper.test(cls) ) {
 			cls = proxy(cls, base);
 		}
 		
