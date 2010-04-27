@@ -1,4 +1,4 @@
-(function(){
+;(function(){
 
 	var F = function(){},
 		OP = Object.prototype,
@@ -66,7 +66,7 @@
 			prop = a[i],
 			cls = prop && hasOwnProperty.call( prop, "constructor" ) && prop.constructor;
 		
-		if ( !cls || !isFunction(cls) ) {
+		if ( !isFunction(cls) ) {
 			cls = base ?
 				function(){ return base.apply(this, arguments); } :
 				function(){};
