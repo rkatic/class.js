@@ -3,15 +3,15 @@
 	var F = function(){},
 		OP = Object.prototype,
 		hasOwnProperty = OP.hasOwnProperty,
-		toString = OP.toString,
+		ostr = OP.toString,
 		rsuper = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /^/;
 	
 	function isFunction( obj ) {
-		return !!obj && toString.call(obj) === "[object Function]";
+		return !!obj && ostr.call(obj) === "[object Function]";
 	}
 	
 	function isArray( obj ) {
-		return !!obj && toString.call(obj) === "[object Array]";
+		return !!obj && ostr.call(obj) === "[object Array]";
 	}
 	
 	function proxy( fn, parent, method ) {
