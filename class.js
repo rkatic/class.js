@@ -3,8 +3,8 @@
 	var F = function(){},
 		OP = Object.prototype,
 		ostr = OP.toString,
-		o = { foo: function(){return o.foo;} }, // IE9... minify...
-		reSuper = /foo/.test( { foo: o.foo }.foo ) ? /\b_super\b/ : /^/;
+		foo = function(){ return o.foo; },
+		reSuper = /foo/.test( foo ) ? /\b_super\b/ : /^/;
 	
 	function isFunction( obj ) {
 		return !!obj && ostr.call(obj) === "[object Function]";
@@ -59,6 +59,9 @@
 			constructor = base ?
 				function(){ return base.apply(this, arguments); } :
 				function(){};
+				
+		} else if ( base && reSuper.test( constructor ) ) {
+			constructor = proxy( constructor, base );
 		}
 		
 		if ( base || mixins && mixins.length ) {
@@ -79,13 +82,14 @@
 			}
 			
 			if ( prop ) {			
-				for ( var name in prop ) {
-					var value = prop[ name ];
-					
-					prototype[ name ] = ( name in prototype ) && isFunction( value ) && reSuper.test( value ) ?
-						proxy( value, parent, name ) :
-						value;
+				for ( var i in prop ) {
+					prototype[i] = ( i in prototype ) && isFunction( prop[i] ) && reSuper.test( prop[i] ) ?
+						proxy( prop[i], parent, name ) :
+						prop[i];
 				}
+				
+				// Or without _super:
+				//extend( prototype, prop );
 			}
 			
 		} else {
