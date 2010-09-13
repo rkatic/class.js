@@ -19,7 +19,7 @@
 		return function() {
 			var tmp = this._super;
 			this._super = method ? parent[ method ] : parent;
-			var ret = fn.apply(this, arguments);
+			var ret = fn.apply( this, arguments );
 			this._super = tmp;
 			return ret;
 		};
@@ -36,7 +36,9 @@
 		F.prototype = parent || OP;
 		var obj = new F();
 		
-		mixin && extend( obj, mixin );
+		if ( mixin ) {
+			extend( obj, mixin );
+		}
 		
 		return obj;
 	}
@@ -45,48 +47,53 @@
 		var a = arguments, i = 0,
 			base = isFunction( a[i] ) ? a[i++] : null,
 			mixins = isArray( a[i] ) ? a[i++] : null,
-			prop = a[i] || {},
+			prop = a[i],
 			parent = base && base.prototype,
-			cls, prototype;
+			constructor, prototype;
+		
+		if ( prop ) {
+			constructor = prop.constructor;
+			delete prop.constructor;
+			
+			// If after delition, constructor is inaltered, then it is not own.
+			if ( constructor === prop.constructor ) {
+				constructor = null;
+			}
+		}
 		
 		if ( base || mixins && mixins.length ) {
 			prototype = $object( parent );
 			
-			for ( var i = 0; i < mixins.length; ++i ) {
-				extend( prototype, mixins[i] );
+			if ( mixins ) {
+				for ( var i = 0; i < mixins.length; ++i ) {
+					extend( prototype, mixins[i] );
+				}
 			}
 			
-			if ( prop ) {
+			if ( prop ) {			
 				for ( var name in prop ) {
 					var value = prop[ name ];
 					
-					if ( name === "constructor" && isFunction( value ) ) {
-						cls = base && reSuper.test( value ) ?
-							proxy( value, base ) :
-							value;
-							
-					} else {
-						prototype[ name ] = prototype[ name ] && isFunction( value ) && reSuper.test( value ) ?
-							proxy( value, parent, name ) :
-							value;
-					}
+					prototype[ name ] = ( name in prototype ) && isFunction( value ) && reSuper.test( value ) ?
+						proxy( value, parent, name ) :
+						value;
 				}
 			}
 			
 		} else {
-			prototype = prop;
+			prototype = prop || {};
 		}
 		
-		if ( !cls ) {
-			cls =  base ?
+		if ( !constructor ) {
+			constructor =  base ?
 				function(){ return base.apply(this, arguments); } :
 				function(){};
 		}
 		
-		prototype.constructor = cls;
-		cls.prototype = prototype;
+		prototype.constructor = constructor;
+		constructor.prototype = prototype;
 		
-		return cls;
+		return constructor;
 	}
 	
 	//EXPOSE
