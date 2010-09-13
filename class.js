@@ -61,13 +61,26 @@
 			}
 		}
 		
+		if ( !constructor ) {
+			constructor = base ?
+				function(){ return base.apply(this, arguments); } :
+				function(){};
+		}
+		
 		if ( base || mixins && mixins.length ) {
-			prototype = $object( parent );
+			prototype = parent ? $object( parent ) : {};
 			
 			if ( mixins ) {
 				for ( var i = 0; i < mixins.length; ++i ) {
-					var mixin = isFunction( mixins[i] ) ? mixins[i].prototype : mixins[i];
-					extend( prototype, mixin );
+					var mixin = mixins[i];
+					
+					if ( isFunction( mixin ) ) {
+						mixin = mixin.prototype;
+					}
+					
+					if ( mixin ) {
+						extend( prototype, mixin );
+					}
 				}
 			}
 			
@@ -83,12 +96,6 @@
 			
 		} else {
 			prototype = prop || {};
-		}
-		
-		if ( !constructor ) {
-			constructor =  base ?
-				function(){ return base.apply(this, arguments); } :
-				function(){};
 		}
 		
 		prototype.constructor = constructor;
