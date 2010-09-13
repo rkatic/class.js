@@ -66,7 +66,8 @@
 			
 			if ( mixins ) {
 				for ( var i = 0; i < mixins.length; ++i ) {
-					extend( prototype, mixins[i] );
+					var mixin = isFunction( mixins[i] ) ? mixins[i].prototype : mixins[i];
+					extend( prototype, mixin );
 				}
 			}
 			
