@@ -53,14 +53,9 @@
 		if ( prop ) {
 			constructor = prop.constructor;
 			delete prop.constructor;
-			
-			// If after delition, constructor is inaltered, then it is not own.
-			if ( constructor === prop.constructor ) {
-				constructor = null;
-			}
 		}
 		
-		if ( !constructor ) {
+		if ( !constructor || constructor === prop.constructor ) {
 			constructor = base ?
 				function(){ return base.apply(this, arguments); } :
 				function(){};
