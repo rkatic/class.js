@@ -87,9 +87,6 @@
 						proxy( prop[i], parent, name ) :
 						prop[i];
 				}
-				
-				// Or without _super:
-				//extend( prototype, prop );
 			}
 			
 		} else {
