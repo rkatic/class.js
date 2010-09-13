@@ -3,9 +3,8 @@
 	var F = function(){},
 		OP = Object.prototype,
 		ostr = OP.toString,
-		tmp = function(){foo;},
-		foo = tmp, // IE9..
-		reSuper = /foo/.test( foo ) ? /\b_super\b/ : /^/;
+		o = { foo: function(){return o.foo;} }, // IE9... minify...
+		reSuper = /foo/.test( { foo: o.foo }.foo ) ? /\b_super\b/ : /^/;
 	
 	function isFunction( obj ) {
 		return !!obj && ostr.call(obj) === "[object Function]";
@@ -45,8 +44,8 @@
 	
 	function $class( /* base, mixins, prop */ ) {
 		var a = arguments, i = 0,
-			base = isFunction( a[i] ) ? a[i++] : null,
-			mixins = isArray( a[i] ) ? a[i++] : null,
+			base = !a[i] || isFunction( a[i] ) ? a[i++] : null,
+			mixins = !a[i] || isArray( a[i] ) ? a[i++] : null,
 			prop = a[i],
 			parent = base && base.prototype,
 			constructor, prototype;
