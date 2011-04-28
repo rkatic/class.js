@@ -1,4 +1,4 @@
-;(function(){
+;(function(window){
 
 	var F = function(){},
 		OP = Object.prototype,
@@ -100,9 +100,9 @@
 	}
 	
 	//EXPOSE
-	this.$object = $object;
-	this.$class = $class;
+	window.$object = $object;
+	window.$class = $class;
 	//this.isFunction = isFunction;
 	//this.isArray = isArray;
 
-}).call(this);
+}(this));
