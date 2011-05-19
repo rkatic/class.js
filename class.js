@@ -4,15 +4,15 @@
 		OP = Object.prototype,
 		toStr = OP.toString,
 		foo = function(){ return o.foo; },
-		reSuper = /foo/.test( foo ) ? /\b_super\b/ : /^/;
+		reSuper = /foo/.test( foo ) ? /\b_super\b/ : /^/,
 
-	function isFunction( obj ) {
-		return !!obj && toStr.call(obj) === "[object Function]";
-	}
+		isFunction = function( x ) {
+			return x != null && toStr.call( x ) === "[object Function]";
+		},
 
-	function isArray( obj ) {
-		return !!obj && toStr.call(obj) === "[object Array]";
-	}
+		isArray = Array.isArray || function( x ) {
+			return x != null && toStr.call( x ) === "[object Array]";
+		};
 
 	function proxy( fn, parent, method ) {
 		return function() {
