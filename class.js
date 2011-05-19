@@ -2,16 +2,16 @@
 
 	var F = function(){},
 		OP = Object.prototype,
-		ostr = OP.toString,
+		toStr = OP.toString,
 		foo = function(){ return o.foo; },
 		reSuper = /foo/.test( foo ) ? /\b_super\b/ : /^/;
 
 	function isFunction( obj ) {
-		return !!obj && ostr.call(obj) === "[object Function]";
+		return !!obj && toStr.call(obj) === "[object Function]";
 	}
 
 	function isArray( obj ) {
-		return !!obj && ostr.call(obj) === "[object Array]";
+		return !!obj && toStr.call(obj) === "[object Array]";
 	}
 
 	function proxy( fn, parent, method ) {
