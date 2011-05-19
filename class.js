@@ -101,9 +101,9 @@
 	}
 
 	//EXPOSE
+	$object.isArray = isArray;
+	$object.isFunction = isFunction;
 	global.$object = $object;
 	global.$class = $class;
-	//global.isFunction = isFunction;
-	//global.isArray = isArray;
 
 })( this );
