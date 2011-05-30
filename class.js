@@ -53,6 +53,7 @@
 
 		if ( body ) {
 			constructor = body.constructor;
+			// To avoid hasOwnProperty("constructor") later.
 			delete body.constructor;
 		}
 
