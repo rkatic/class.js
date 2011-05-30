@@ -43,20 +43,20 @@
 		return obj;
 	}
 
-	function $class( /* base, mixins, prop */ ) {
+	function $class( /* base, mixins, body */ ) {
 		var a = arguments, i = 0,
 			base = !a[i] || isFunction( a[i] ) ? a[i++] : null,
 			mixins = !a[i] || isArray( a[i] ) ? a[i++] : null,
-			prop = a[i],
+			body = a[i],
 			parent = base && base.prototype,
 			constructor, prototype;
 
-		if ( prop ) {
-			constructor = prop.constructor;
-			delete prop.constructor;
+		if ( body ) {
+			constructor = body.constructor;
+			delete body.constructor;
 		}
 
-		if ( !constructor || constructor === prop.constructor ) {
+		if ( !constructor || constructor === body.constructor ) {
 			constructor = base ?
 				function(){ return base.apply(this, arguments); } :
 				function(){};
@@ -82,16 +82,16 @@
 				}
 			}
 
-			if ( prop ) {
-				for ( var i in prop ) {
-					prototype[i] = ( i in prototype ) && isFunction( prop[i] ) && reSuper.test( prop[i] ) ?
-						proxy( prop[i], parent, name ) :
-						prop[i];
+			if ( body ) {
+				for ( var i in body ) {
+					prototype[i] = ( i in prototype ) && isFunction( body[i] ) && reSuper.test( body[i] ) ?
+						proxy( body[i], parent, name ) :
+						body[i];
 				}
 			}
 
 		} else {
-			prototype = prop || {};
+			prototype = body || {};
 		}
 
 		prototype.constructor = constructor;
