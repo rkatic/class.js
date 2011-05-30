@@ -89,7 +89,7 @@
 			if ( body ) {
 				for ( var i in body ) {
 					prototype[i] = parent && ( i in parent ) && isFunction( body[i] ) && reSuper.test( body[i] ) ?
-						proxy( body[i], parent, name ) :
+						proxy( body[i], parent, i ) :
 						body[i];
 				}
 			}
