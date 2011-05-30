@@ -43,7 +43,7 @@
 		return obj;
 	}
 
-	function $class( /* base, mixins, body */ ) {
+	function $class( /* [base], [mixins], [body] */ ) {
 		var a = arguments, i = 0,
 			base = !a[i] || isFunction( a[i] ) ? a[i++] : null,
 			mixins = !a[i] || isArray( a[i] ) ? a[i++] : null,
