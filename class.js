@@ -3,7 +3,9 @@
 	var F = function(){},
 		OP = Object.prototype,
 		toStr = OP.toString,
-		foo = function(){ return o.foo; },
+
+		// Test if function serialization works.
+		foo = function(){ return OP.foo; },
 		reSuper = /foo/.test( foo ) ? /\b_super\b/ : /^/,
 
 		isFunction = function( x ) {
@@ -12,28 +14,29 @@
 
 		isArray = Array.isArray || function( x ) {
 			return x != null && toStr.call( x ) === "[object Array]";
-		};
+		},
 
-	function proxy( fn, parent, method ) {
-		return function() {
-			var tmp = this._super;
-			this._super = method ? parent[ method ] : parent;
-			var ret = fn.apply( this, arguments );
-			this._super = tmp;
-			return ret;
-		};
-	}
+		proxy = function( fn, parent, method ) {
+			return function() {
+				var tmp = this._super;
+				this._super = method ? parent[ method ] : parent;
+				var ret = fn.apply( this, arguments );
+				this._super = tmp;
+				return ret;
+			};
+		},
 
-	function extend( obj, mixin ) {
-		for ( var key in mixin ) {
-			obj[ key ] = mixin[ key ];
-		}
-		return obj;
-	}
+		extend = function( obj, mixin ) {
+			for ( var key in mixin ) {
+				obj[ key ] = mixin[ key ];
+			}
+			return obj;
+		};
 
 	function $object( parent, mixin ) {
 		F.prototype = parent || OP;
 		var obj = new F();
+		// Don't keep the reference!
 		F.prototype = OP;
 
 		if ( mixin ) {
@@ -85,7 +88,7 @@
 
 			if ( body ) {
 				for ( var i in body ) {
-					prototype[i] = ( i in prototype ) && isFunction( body[i] ) && reSuper.test( body[i] ) ?
+					prototype[i] = parent && ( i in parent ) && isFunction( body[i] ) && reSuper.test( body[i] ) ?
 						proxy( body[i], parent, name ) :
 						body[i];
 				}
