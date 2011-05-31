@@ -79,6 +79,10 @@
 		if ( base || mixins && mixins.length || body && body.STATIC ) {
 			prototype = $object( parent );
 
+			if ( base ) {
+				_extend_( constructor, base );
+			}
+
 			if ( mixins ) {
 				for ( i = 0; i < mixins.length; ++i ) {
 					$class.mixin( constructor, mixins[i] );
