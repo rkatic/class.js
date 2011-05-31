@@ -1,8 +1,10 @@
-;(function( global ){
+;(function( GLOBALS ){
 
 	var F = function(){},
 		OP = Object.prototype,
 		toStr = OP.toString,
+		hasOwn = OP.hasOwnProperty,
+		SPECAILS = { STATIC: 1, prototype: 1, constructor: 1 },
 
 		// Test if function serialization works.
 		foo = function(){ return OP.foo; },
@@ -26,11 +28,14 @@
 			};
 		},
 
-		extend = function( obj, mixin ) {
-			for ( var key in mixin ) {
-				obj[ key ] = mixin[ key ];
+		_extend_ = function( obj, mixin, override ) {
+			for ( var i in mixin ) {
+				if ( !( i in SPECAILS ) ) {
+					obj[i] = override && ( i in override ) && isFunction( mixin[i] ) && reSuper.test( mixin[i] ) ?
+						proxy( mixin[i], override, i ) :
+						mixin[i];
+				}
 			}
-			return obj;
 		};
 
 	function $object( parent, mixin ) {
@@ -40,11 +45,18 @@
 		F.prototype = OP;
 
 		if ( mixin ) {
-			extend( obj, mixin );
+			$object.extend( obj, mixin );
 		}
 
 		return obj;
 	}
+
+	$object.extend = function( obj, mixin ) {
+		for ( var key in mixin ) {
+			obj[ key ] = mixin[ key ];
+		}
+		return obj;
+	};
 
 	function $class( /* [base], [mixins], [body] */ ) {
 		var a = arguments, i = 0,
@@ -52,15 +64,10 @@
 			mixins = !a[i] || isArray( a[i] ) ? a[i++] : null,
 			body = a[i],
 			parent = base && base.prototype,
-			constructor, prototype;
+			constructor = body && hasOwn.call( body, "constructor" ) && body.constructor,
+			prototype;
 
-		if ( body ) {
-			constructor = body.constructor;
-			// To avoid hasOwnProperty("constructor") later.
-			delete body.constructor;
-		}
-
-		if ( !constructor || constructor === body.constructor ) {
+		if ( !constructor ) {
 			constructor = base ?
 				function(){ return base.apply(this, arguments); } :
 				function(){};
@@ -69,28 +76,20 @@
 			constructor = proxy( constructor, base );
 		}
 
-		if ( base || mixins && mixins.length ) {
-			prototype = parent ? $object( parent ) : {};
+		if ( base || mixins && mixins.length || body && body.STATIC ) {
+			prototype = $object( parent );
 
 			if ( mixins ) {
-				for ( var i = 0; i < mixins.length; ++i ) {
-					var mixin = mixins[i];
-
-					if ( isFunction( mixin ) ) {
-						mixin = mixin.prototype;
-					}
-
-					if ( mixin ) {
-						extend( prototype, mixin );
-					}
+				for ( i = 0; i < mixins.length; ++i ) {
+					$class.mixin( constructor, mixins[i] );
 				}
 			}
 
 			if ( body ) {
-				for ( var i in body ) {
-					prototype[i] = parent && ( i in parent ) && isFunction( body[i] ) && reSuper.test( body[i] ) ?
-						proxy( body[i], parent, i ) :
-						body[i];
+				_extend_( prototype, body, parent );
+
+				if ( body.STATIC ) {
+					_extend_( constructor, body.STATIC, base );
 				}
 			}
 
@@ -98,16 +97,26 @@
 			prototype = body || {};
 		}
 
+
 		prototype.constructor = constructor;
 		constructor.prototype = prototype;
 
 		return constructor;
 	}
 
+	$class.mixin = function( cls, mixin ) {
+		var is_cls = isFunction( mixin ),
+			statics = is_cls ? mixin : mixin.STATIC,
+			proto = is_cls ? mixin.prototype : mixin;
+
+		proto && _extend_( cls.prototype, proto );
+		statics && _extend_( cls, statics );
+	};
+
 	//EXPOSE
 	$object.isArray = isArray;
 	$object.isFunction = isFunction;
-	global.$object = $object;
-	global.$class = $class;
+	GLOBALS.$object = $object;
+	GLOBALS.$class = $class;
 
 })( this );
