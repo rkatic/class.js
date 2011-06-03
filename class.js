@@ -6,6 +6,9 @@
 		hasOwn = OP.hasOwnProperty,
 		SPECAILS = { STATIC: 1, prototype: 1, constructor: 1 },
 
+		slice = [].slice,
+		concat = [].concat,
+
 		// Test if function serialization works.
 		foo = function(){ return OP.foo; },
 		reSuper = /foo/.test( foo ) ? /\b_super\b/ : /^/,
@@ -36,35 +39,49 @@
 						mixin[i];
 				}
 			}
+		},
+
+		proc = function( fun, o, a, from ) {
+			a = concat.apply( [], slice.call( a, from || 0 ) );
+
+			for ( var i = 0, l = a.length; i < l; ++i ) {
+				a[i] && fun( o, a[i] );
+			}
+
+			return o;
 		};
 
-	function $object( parent, mixin ) {
+	function $object( parent ) {
 		F.prototype = parent || OP;
 		var obj = new F();
 		// Don't keep the reference!
 		F.prototype = OP;
 
-		if ( mixin ) {
-			$object.extend( obj, mixin );
+		if ( arguments.length > 1 ) {
+			proc( $object._extend, obj, arguments, 1 );
 		}
 
 		return obj;
 	}
 
-	$object.extend = function( obj, mixin ) {
+	$object._extend = function( obj, mixin ) {
 		for ( var key in mixin ) {
 			obj[ key ] = mixin[ key ];
 		}
 		return obj;
 	};
 
+	$object.extend = function( obj ) {
+		return proc( $object._extend, obj, arguments, 1 );
+	};
+
 	function $class( /* [base], [mixins], [body] */ ) {
 		var a = arguments, i = 0,
 			base = !a[i] || isFunction( a[i] ) ? a[i++] : null,
 			mixins = !a[i] || isArray( a[i] ) ? a[i++] : null,
-			body = a[i],
+			body = a[i] || {},
 			parent = base && base.prototype,
-			constructor = body && hasOwn.call( body, "constructor" ) && body.constructor,
+			constructor = hasOwn.call( body, "constructor" ) && body.constructor,
 			prototype;
 
 		if ( !constructor ) {
@@ -76,7 +93,7 @@
 			constructor = proxy( constructor, base );
 		}
 
-		if ( base || mixins && mixins.length || body && body.STATIC ) {
+		if ( base || mixins && mixins.length || body.STATIC ) {
 			prototype = $object( parent );
 
 			if ( base ) {
@@ -84,21 +101,17 @@
 			}
 
 			if ( mixins ) {
-				for ( i = 0; i < mixins.length; ++i ) {
-					$class.mixin( constructor, mixins[i] );
-				}
+				proc( $class._mixin, constructor, mixins );
 			}
 
-			if ( body ) {
-				_extend_( prototype, body, parent );
+			_extend_( prototype, body, parent );
 
-				if ( body.STATIC ) {
-					_extend_( constructor, body.STATIC, base );
-				}
+			if ( body.STATIC ) {
+				_extend_( constructor, body.STATIC, base );
 			}
 
 		} else {
-			prototype = body || {};
+			prototype = body;
 		}
 
 
@@ -108,13 +121,17 @@
 		return constructor;
 	}
 
-	$class.mixin = function( cls, mixin ) {
+	$class._mixin = function( cls, mixin ) {
 		var is_cls = isFunction( mixin ),
 			statics = is_cls ? mixin : mixin.STATIC,
 			proto = is_cls ? mixin.prototype : mixin;
 
 		proto && _extend_( cls.prototype, proto );
 		statics && _extend_( cls, statics );
+	};
+
+	$class.mixin = function( cls ) {
+		return proc( $class._mixin, cls, arguments, 1 );
 	};
 
 	//EXPOSE
