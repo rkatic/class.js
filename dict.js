@@ -38,13 +38,13 @@ var Dict = $class({
 	},
 	setKeys: function( keys, value ) {
 		var m = this.m;
-		for (var i = 0, l = keys.length; i < l; ++i) {
+		for ( var i = 0, l = keys.length; i < l; ++i ) {
 			m[ '#' + key ] = value;
 		}
 	},
 	removeKeys: function( keys ) {
 		var m = this.m;
-		for (var i = 0, l = keys.length; i < l; ++i) {
+		for ( var i = 0, l = keys.length; i < l; ++i ) {
 			delete m[ '#' + key ];
 		}
 	},
