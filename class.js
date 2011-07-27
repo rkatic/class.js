@@ -68,7 +68,6 @@
 		for ( var key in mixin ) {
 			obj[ key ] = mixin[ key ];
 		}
-		return obj;
 	};
 
 	$object.extend = function( obj ) {
