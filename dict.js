@@ -1,114 +1,117 @@
 var Dict = $class({
+	r: '/',
 	constructor: function( obj ) {
 		this.m = {};
+		this.r = this.r;
 		if ( obj ) {
 			this.update( obj );
 		}
 	},
+	copy: function() {
+		return new this.constructor( this );
+	},
+	sub: function( root ) {
+		var dict = new this.constructor();
+		dict.m = this.m;
+		dict.r = this.r + root;
+		return dict;
+	},
 	get: function( key ) {
-		return this.m[ '#' + key ];
+		return this.m[ this.r + key ];
 	},
 	set: function( key, value ) {
-		this.m[ '#' + key ] = value;
+		this.m[ this.r + key ] = value;
 	},
 	remove: function( key ) {
-		delete this.m[ '#' + key ];
+		delete this.m[ this.r + key ];
 	},
 	has: function( key ) {
-		return this.m.hasOwnProperty( '#' + key );
+		return ( this.r + key ) in this.m;
 	},
 	isEmpty: function() {
-		for ( var i in this.m ) {
-			if ( !this.m.hasOwnProperty(i) ) {
-				break;
+		var r = this.r;
+		for ( var h in this.m ) {
+			if ( h.indexOf(r) == 0 ) {
+				return false;
 			}
-			return false;
 		}
 		return true;
 	},
 	size: function() {
-		var n = 0, m = this.m;
-		for ( var i in m ) {
-			if ( !m.hasOwnProperty(i) ) {
-				break;
+		var n = 0, m = this.m, r = this.r;
+		for ( var h in m ) {
+			if ( h.indexOf(r) == 0 ) {
+				++n;
 			}
-			++n;
 		}
 		return n;
 	},
 	setKeys: function( keys, value ) {
-		var m = this.m;
+		var m = this.m, r = this.r;
 		for ( var i = 0, l = keys.length; i < l; ++i ) {
-			m[ '#' + key ] = value;
+			m[ r + keys[i] ] = value;
+		}
+	},
+	setRecordsBy: function( by, records ) {
+		var record, m = this.m, r = this.r;
+		for ( var i = 0, l = records.length; i < l; ++i ) {
+			record = records[i];
+			m[ r + record[by] ] = record;
 		}
 	},
 	removeKeys: function( keys ) {
-		var m = this.m;
+		var m = this.m, r = this.r;
 		for ( var i = 0, l = keys.length; i < l; ++i ) {
-			delete m[ '#' + key ];
+			delete m[ r + keys[i] ];
 		}
 	},
-	update: function( obj ) {
-		if ( obj instanceof Dict ) {
-			var dm = this.m, sm = obj.m;
-			for ( var i in sm ) {
-				if ( !sm.hasOwnProperty(i) ) {
-					break;
-				}
-				dm[i] = sm[i];
-			}
+	update: function( obj, notDict ) {
+		if ( !notDict && 'iter' in obj && !this.hasOwnProperty.call(obj, 'iter') ) {
+			obj.iter( this.set, this );
+
 		} else {
-			var dm = this.m;
-			for ( var i in obj ) {
-				if ( !obj.hasOwnProperty(i) ) {
-					break;
-				}
-				dm[ "#" + i ] = obj[ i ];
+			var m = this.m, r = this.r;
+
+			for ( var k in obj ) {
+				m[ r + k ] = obj[ k ];
 			}
 		}
+
 		return this;
 	},
-	each: function( callback, context ) {
-		var m = this.m;
-		for ( var i in m ) {
-			if ( !m.hasOwnProperty(i) || callback.call(context, i.substring(1), m[i]) === false ) {
+	iter: function( callback, context ) {
+		var m = this.m, r = this.r, rlen = r.length;
+		for ( var h in m ) {
+			if ( h.indexOf(r) == 0 && callback.call(context, h.substring(rlen), m[h]) === false ) {
 				break;
 			}
 		}
 		return this;
 	},
-	eachKey: function( callback, context ) {
-		for ( var i in this.m ) {
-			if ( !m.hasOwnProperty(i) || callback.call(context, i.substring(1)) === false ) {
-				break;
-			}
-		}
-		return this;
-	},
-	eachValue: function( callback, context ) {
-		var m = this.m;
-		for ( var i in m ) {
-			if ( !m.hasOwnProperty(i) || callback.call(context, m[i]) === false ) {
-				break;
-			}
-		}
-		return this;
+	toArray: function() {
+		var a = [];
+		this.iter( a.push, a );
+		return a;
 	},
 	pairs: function() {
 		var a = [];
-		this.each(function( key, value ) {
-			a.push( [key, value] );
+		this.iter(function( key, value ) {
+			a.push( [key, value ] );
 		});
 		return a;
 	},
 	keys: function() {
 		var a = [];
-		this.eachKey( a.push, a );
+		this.iter(function( key, value ) {
+			a.push( key );
+		});
 		return a;
 	},
 	values: function() {
 		var a = [];
-		this.eachValue( a.push, a );
+		this.iter(function( key, value ) {
+			a.push( value );
+		});
 		return a;
 	}
 });

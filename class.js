@@ -42,7 +42,7 @@
 		},
 
 		proc = function( fun, o, a, from ) {
-			a = concat.apply( [], slice.call( a, from || 0 ) );
+			a = concat.apply( [], from ? slice.call( a, from ) : a );
 
 			for ( var i = 0, l = a.length; i < l; ++i ) {
 				a[i] && fun( o, a[i] );
@@ -133,7 +133,7 @@
 		return proc( $class._mixin, cls, arguments, 1 );
 	};
 
-	//EXPOSE
+	// EXPOSE
 	$object.isArray = isArray;
 	$object.isFunction = isFunction;
 	GLOBALS.$object = $object;
